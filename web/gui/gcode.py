@@ -9,8 +9,8 @@ import svgwrite
 import xml.etree.ElementTree as ET
 
 # Enter the correct API key and the CSE id
-API_KEY = "#################"
-CSE_ID = "############"
+API_KEY = "AIzaSyDZfuNNQKi625ep6NWnbD8Ty_UyeChHZXc"
+CSE_ID = "511ba7e683f874473"
 
 def google_image_search(object_name, num_results=3):
     query = f"simple flat {object_name} image" # simple {obj} outline image
@@ -111,10 +111,10 @@ def svg_to_gcode(svg_path, gcode_path):
     ns = {"svg": "http://www.w3.org/2000/svg"}
 
     gcode_lines = [
-        "G21 ; set units to mm",
-        "G90 ; absolute positioning",
+        "G21 ;",
+        "G90 ;",
         "F1000",
-        "G0 Z5.0 ; pen up"
+        "G0 Z5.0 ;"
     ]
 
     for poly in root.findall(".//svg:polyline", ns):
@@ -128,13 +128,13 @@ def svg_to_gcode(svg_path, gcode_path):
             continue
         x0, y0 = coords[0]
         gcode_lines.append(f"G0 X{x0:.2f} Y{y0:.2f}")
-        gcode_lines.append("G1 Z-1.0 F300 ; pen down")
+        gcode_lines.append("G1 Z-1.0 F300 ;")
         for (x, y) in coords[1:]:
             gcode_lines.append(f"G1 X{x:.2f} Y{y:.2f}")
-        gcode_lines.append("G0 Z5.0 ; pen up")
+        gcode_lines.append("G0 Z5.0 ;")
 
-    gcode_lines.append("G0 X0 Y0 ; return home")
-    gcode_lines.append("M2 ; end program")
+    gcode_lines.append("G0 X0 Y0 ;")
+    gcode_lines.append("M2 ;")
 
     with open(gcode_path, "w") as f:
         f.write("\n".join(gcode_lines))

@@ -19,7 +19,7 @@ camera.position.set(0, -150, 150);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-const container = document.getElementById("visualizer-content");
+const container = document.getElementById("cnc_live");
 container.appendChild(renderer.domElement);
 renderer.setSize(container.clientWidth, container.clientHeight);
 
@@ -100,8 +100,11 @@ function renderGcode(moves) {
   moves.forEach(move => {
     // flatten to Z=0 so everything is on a 2D plane
     const geometry = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(move.from.x, move.from.y, 0),
-      new THREE.Vector3(move.to.x, move.to.y, 0)
+      // new THREE.Vector3(move.from.y, -move.from.x, 0),
+      // new THREE.Vector3(move.to.y, -move.to.x, 0)
+
+      new THREE.Vector3(-move.from.x, -move.from.y, 0),
+      new THREE.Vector3(-move.to.x, -move.to.y, 0)
     ]);
     const mat = move.type === "cut" ? materialCut : materialRapid;
     const line = new THREE.Line(geometry, mat);
@@ -111,6 +114,9 @@ function renderGcode(moves) {
     }
     gcodeGroup.add(line);
   });
+
+  gcodeGroup.scale.y = -1;
+  gcodeGroup.rotation.z = Math.PI;
 
   scene.add(gcodeGroup);
 
@@ -145,18 +151,26 @@ function frameGcodeToView(object) {
   controls.update();
 }
 
-// File input handler
-document.getElementById("fileInput").addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (evt) => {
-    const gcodeText = evt.target.result;
-    const moves = parseGcode(gcodeText);
-    renderGcode(moves);
-  };
-  reader.readAsText(file);
+// // File input handler
+// document.getElementById("fileInput").addEventListener("change", (e) => {
+//   const file = e.target.files[0];
+//   if (!file) return;
+//   const reader = new FileReader();
+//   reader.onload = (evt) => {
+//     const gcodeText = evt.target.result;
+//     const moves = parseGcode(gcodeText);
+//     renderGcode(moves);
+//   };
+//   reader.readAsText(file);
+// });
+
+// Instead of fileInput, listen for gcodeLoaded event
+window.addEventListener("gcodeLoaded", (e) => {
+  const gcodeText = e.detail;
+  const moves = parseGcode(gcodeText);
+  renderGcode(moves);
 });
+
 
 // Animate
 function animate() {

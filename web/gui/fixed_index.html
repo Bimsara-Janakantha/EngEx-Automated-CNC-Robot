@@ -5,13 +5,17 @@
 <title>CNC Web Controller</title>
 
 <!-- Your CSS -->
-<link rel="stylesheet" href="index_copy.css">
+<link rel="stylesheet" href="index.css">
 
 <!-- External Libraries (CDN for simplicity) -->
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-blue.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="css/custom.css">
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js"></script>
+<script src="https://code.jquery.com/jquery-1.9.0.min.js"></script>
 
 <script type="importmap">
   {
@@ -24,8 +28,19 @@
 
 <script type="module" src="script.js"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js"></script>
-<script src="https://code.jquery.com/jquery-1.9.0.min.js"></script>
+<script type="text/javascript" >
+
+   const TOPIC_COM2WEB = 'engex/com2web';
+   const TOPIC_WEB2COM = 'engex/web2com';
+
+   const mqtt_server = "test.mosquitto.org";
+   const mqtt_port = 8080; // Default WebSocket port for Mosquitto
+   const mqtt_destname = TOPIC_WEB2COM;
+
+</script>
+
+<script src="./js/motion.js"></script>
+<script src="./js/mqtt.js"></script>
 
 <style>
 /* General Layout */
@@ -79,8 +94,12 @@ body, html {
     display: flex;
     align-items: center;
     justify-content: center;
+    height:  100%;
 }
-.visualizer-content img,
+.visualizer-content img {
+  max-width: 100%;   /* Prevent overflow */
+  max-height: 100%;  /* Scale image if window shrinks */
+}
 .visualizer-content video,
 .visualizer-content canvas {
     max-width: 100%;
@@ -153,9 +172,9 @@ body, html {
 
     <!-- Bottom-left: Live CNC Stream -->
     <div class="visualizer-cell">
-      <div class="visualizer-title"><i class="fa fa-video-camera"></i> CNC Live Feed</div>
-      <div class="visualizer-content">
-        <img src="http://<raspberrypi-ip>:8080/?action=stream" alt="CNC Live Stream">
+      <div class="visualizer-title"><i class="fa fa-video-camera"></i> Tool Path</div>
+      <div class="visualizer-content" id="cnc_live">
+        <!-- <img src="http://<raspberrypi-ip>:8080/?action=stream" alt="CNC Live Stream"> -->
       </div>
     </div>
 
@@ -397,6 +416,20 @@ function handleFiles(files) {
   reader.readAsDataURL(file);
 }
 
+
+
+/*-----------------
+Gcode Visualizer
+--------------------------*/
+
+// expose helper to visualizer.js
+    window.loadAndVisualizeGcode = async function (gcodeUrl) {
+      const response = await fetch(gcodeUrl);
+      const gcodeText = await response.text();
+      const event = new CustomEvent("gcodeLoaded", { detail: gcodeText });
+      window.dispatchEvent(event);
+  };
+
 /*-----------------
 Text Input Search
 
@@ -439,6 +472,22 @@ const text_input_submit_btn = document.getElementById("text_input_submit");
             const gcodeImg = document.getElementById("gcodeImage");
             gcodeImg.src = `images/sketch.svg?t=${timestamp}`;
 
+            const optimized_path = `http://127.0.0.1:5001/web/gui/gcode/output.gcode`;
+
+            loadAndVisualizeGcode(optimized_path);
+
+            try {
+              const response = await fetch(optimized_path);  // relative to your site root
+              if (!response.ok) throw new Error("Failed to load file");
+
+              const gcodeText = await response.text(); // read as plain text            
+              // send to backend
+              sendGCodeToServer(gcodeText);
+
+            } catch (err) {
+              console.error("Error reading G-code file:", err);
+            }
+
         }
       } catch (err) {
         console.error("Request failed:", err);
@@ -473,7 +522,7 @@ const file_input_submit_btn = document.getElementById("file_input_submit");
   const formData = new FormData();
   formData.append("image", file);
 
-  const response = await fetch("http://localhost:5000/upload", {
+  const response = await fetch("http://127.0.0.1:5000/upload", {
     method: "POST",
     body: formData
   });
@@ -493,6 +542,24 @@ const file_input_submit_btn = document.getElementById("file_input_submit");
         const gcodeImg = document.getElementById("gcodeImage");
         gcodeImg.src = `images/sketch.svg?t=${timestamp}`;
 
+        const optimized_path = "http://127.0.0.1:5001/web/gui/gcode/output.gcode";
+
+            loadAndVisualizeGcode(optimized_path);
+
+            try {
+              const response = await fetch(optimized_path);  // relative to your site root
+              if (!response.ok) throw new Error("Failed to load file");
+
+              const gcodeText = await response.text(); // read as plain text
+              console.log("G-code file content:", gcodeText);
+            
+              // send to backend
+              sendGCodeToServer(gcodeText);
+
+            } catch (err) {
+              console.error("Error reading G-code file:", err);
+            }
+
       }
 
     }
@@ -505,8 +572,8 @@ const file_input_submit_btn = document.getElementById("file_input_submit");
 
 function clear_all() {
   // Reset preview images
-  document.getElementById("displayImage").src = "images/logo.png";
-  document.getElementById("gcodeImage").src = "images/cartesian.png";
+  document.getElementById("displayImage").src = "";
+  document.getElementById("gcodeImage").src = "";
   document.getElementById("textInput").value = "";
 
   // Reset dropZone

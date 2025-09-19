@@ -37,7 +37,12 @@ function gotToCoordinate(x,y,z) {
       }, 5000);
 
    }, 3000);
+}
 
 
+function sendGCodeToServer(gcodeText){
+   // console.log("Sending G-code to server:");
+   // console.log(gcodeText);
+   sendCommand(gcodeText);
 
 }

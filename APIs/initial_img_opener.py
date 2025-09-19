@@ -3,8 +3,8 @@ import requests
 import subprocess
 import platform
 
-API_KEY = "<API_KEY_HERE>"
-CSE_ID = "<CSE_ID_HERE>"
+API_KEY = "AIzaSyDZfuNNQKi625ep6NWnbD8Ty_UyeChHZXc"
+CSE_ID = "511ba7e683f874473"
 
 def google_image_search(object_name):
     query = f"simple outline image of a {object_name}"
