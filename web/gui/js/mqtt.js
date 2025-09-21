@@ -2,14 +2,18 @@
 var client = new Paho.MQTT.Client(mqtt_server, mqtt_port,"/socket.io");
 
 function mqttConnect(){
+
+   // set callback handlers
+// client.onConnectionLost = onConnectionLost;
+// client.onMessageArrived = onMessageArrived;
    client.connect({onSuccess:onConnect});
 
-   const txtSendBox = document.getElementById("serialSend");
-   txtSendBox.innerHTML = "Trying to connect...";
+   // const txtSendBox = document.getElementById("serialSend");
+   // txtSendBox.innerHTML = "Trying to connect...";
 }
 
 function onConnect(){
-   document.getElementById("serialSend").innerHTML = "Connected\n"
+   // document.getElementById("serialSend").innerHTML = "Connected\n"
 
    client.onMessageArrived = onMessageArrived;
    client.onConnectionLost = onConnectionLost;
@@ -22,8 +26,9 @@ function sendCommand(text) {
    message.destinationName = TOPIC_WEB2COM;
    client.send(message);
 
-   const txtSendBox = document.getElementById("serialSend");
-   txtSendBox.innerHTML = text + '\n' + txtSendBox.innerHTML;
+   // const txtSendBox = document.getElementById("serialSend");
+   // txtSendBox.innerHTML = text + '\n' + txtSendBox.innerHTML;
+   // txtSendBox.innerHTML = text + '\n';
 }
 
 // called when the client loses its connection
@@ -32,8 +37,8 @@ function onConnectionLost(responseObject) {
    if (responseObject.errorCode !== 0) {
       console.log("onConnectionLost:"+responseObject.errorMessage);
 
-      const txtSendBox = document.getElementById("serialSend");
-      txtSendBox.innerHTML = "Connection Lost\n"+ responseObject.errorMessage+ "\n" + txtSendBox.innerHTML;
+      // const txtSendBox = document.getElementById("serialSend");
+      // txtSendBox.innerHTML = "Connection Lost\n"+ responseObject.errorMessage+ "\n" + txtSendBox.innerHTML;
    }
 }
 
@@ -47,20 +52,20 @@ function onMessageArrived(message) {
       if(result.startsWith("<")){
          console.log("Coordinate Result");
 
-         var state = result.split('|')[0].substring(1);
-         var coordinates = result.split('|')[1].split(':')[1].split(',');
+         // var state = result.split('|')[0].substring(1);
+         // var coordinates = result.split('|')[1].split(':')[1].split(',');
 
          console.log(coordinates);
 
-         $('#lblXCord').text(coordinates[0]);
-         $('#lblYCord').text(coordinates[1]);
-         $('#lblZCord').text(coordinates[2]);
+         // $('#lblXCord').text(coordinates[0]);
+         // $('#lblYCord').text(coordinates[1]);
+         // $('#lblZCord').text(coordinates[2]);
 
-         $('#lblSatus').text(state);
+         // $('#lblSatus').text(state);
       }
-      document.getElementById("serialReceive").innerHTML += result;
-      const txtReceiveBox = document.getElementById("serialReceive");
-      txtReceiveBox.innerHTML = result + '\n' + txtReceiveBox.innerHTML
+      // document.getElementById("serialReceive").innerHTML += result;
+      // const txtReceiveBox = document.getElementById("serialReceive");
+      // txtReceiveBox.innerHTML = result + '\n' + txtReceiveBox.innerHTML
    }
 
    //}

@@ -46,3 +46,7 @@ function sendGCodeToServer(gcodeText){
    sendCommand(gcodeText);
 
 }
+
+window.gotToCoordinate = gotToCoordinate;
+window.sendGCodeToServer = sendGCodeToServer;
+window.jog = jog;

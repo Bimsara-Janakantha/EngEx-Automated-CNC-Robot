@@ -13,8 +13,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="css/custom.css">
 
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
 <script src="https://code.jquery.com/jquery-1.9.0.min.js"></script>
 
 <script type="importmap">
@@ -171,7 +170,7 @@ body, html {
     </div>
 
     <!-- Bottom-left: Live CNC Stream -->
-    <div class="visualizer-cell">
+    <div class="visualizer-cell" style="grid-column: 1 / span 2;">
       <div class="visualizer-title"><i class="fa fa-video-camera"></i> Tool Path</div>
       <div class="visualizer-content" id="cnc_live">
         <!-- <img src="http://<raspberrypi-ip>:8080/?action=stream" alt="CNC Live Stream"> -->
@@ -179,11 +178,11 @@ body, html {
     </div>
 
     <!-- Bottom-right: Canvas Visualizer -->
-    <div class="visualizer-cell">
+    <!-- <div class="visualizer-cell">
       <div class="visualizer-content">
         <canvas id="visualizerCanvas" width="400" height="300"></canvas>
       </div>
-    </div>
+    </div> -->
 
   </div>
 
@@ -230,7 +229,7 @@ body, html {
         <input id="extraInput" class="w3-input w3-border" type="text" placeholder="G-code Prompt...">
         </div>
         <div style="display: flex; justify-content: center;">
-          <button id="text_input_submit" class="button-5" onclick = "">Plot</button>
+          <button id="gcode_input_submit" class="button-5" onclick = "">Plot</button>
         </div>
         <br>
         <label>Upload/Drop Image:</label>
@@ -551,10 +550,11 @@ const file_input_submit_btn = document.getElementById("file_input_submit");
               if (!response.ok) throw new Error("Failed to load file");
 
               const gcodeText = await response.text(); // read as plain text
-              console.log("G-code file content:", gcodeText);
+              // console.log("G-code file content:", gcodeText);
             
               // send to backend
               sendGCodeToServer(gcodeText);
+              
 
             } catch (err) {
               console.error("Error reading G-code file:", err);
@@ -594,5 +594,10 @@ function clear_all() {
 
 </script>
 
+<script>
+      $(document).ready(function(){
+
+         mqttConnect();})
+         </script>
 </body>
 </html>
